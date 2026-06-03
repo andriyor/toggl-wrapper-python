@@ -77,10 +77,14 @@ class FullscreenTimer(QtWidgets.QWidget):
     def _on_selection_changed(self, project: dict | None) -> None:
         self._apply_theme(project.get("color") if project else None)
 
+    # -- Helpers ------------------------------------------------------------ #
+    def _run(self, fn, *args, on_result=None, on_error=None) -> None:
+        run_async(self.pool, fn, *args, on_result=on_result,
+                  on_error=on_error or self._on_error)
+
     # -- Bootstrap / polling ------------------------------------------------ #
     def bootstrap(self) -> None:
-        run_async(self.pool, self._bootstrap_blocking, on_result=self._on_bootstrap,
-                  on_error=self._on_error)
+        self._run(self._bootstrap_blocking, on_result=self._on_bootstrap)
 
     def _bootstrap_blocking(self) -> dict:
         me = self.client.me()
@@ -103,8 +107,7 @@ class FullscreenTimer(QtWidgets.QWidget):
     def refresh_current(self) -> None:
         if self.busy:
             return
-        run_async(self.pool, self.client.current_entry, on_result=self._on_current,
-                  on_error=self._on_error)
+        self._run(self.client.current_entry, on_result=self._on_current)
 
     def _on_current(self, entry: dict | None) -> None:
         self.current = entry or None
@@ -155,7 +158,7 @@ class FullscreenTimer(QtWidgets.QWidget):
             return
         self.busy = True
         self.idle_page.set_title("Starting…")
-        run_async(self.pool, self.client.start, self.workspace_id, project["id"],
+        self._run(self.client.start, self.workspace_id, project["id"],
                   on_result=self._on_started, on_error=self._on_action_error)
 
     def _on_started(self, entry: dict | None) -> None:
@@ -168,7 +171,7 @@ class FullscreenTimer(QtWidgets.QWidget):
             return
         self.busy = True
         self.running_page.set_stopping(True)
-        run_async(self.pool, self.client.stop, self.workspace_id, self.current["id"],
+        self._run(self.client.stop, self.workspace_id, self.current["id"],
                   on_result=self._on_stopped, on_error=self._on_action_error)
 
     def _on_stopped(self, _entry: dict | None) -> None:

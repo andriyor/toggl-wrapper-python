@@ -7,22 +7,20 @@ from typing import Callable
 from PySide6 import QtCore
 
 
-class WorkerSignals(QtCore.QObject):
-    """Signals emitted by a :class:`Worker` (``QRunnable`` can't define them)."""
-
-    result = QtCore.Signal(object)
-    error = QtCore.Signal(str)
-
-
 class Worker(QtCore.QRunnable):
     """Invoke ``fn(*args, **kwargs)`` on a pool thread, emitting the outcome."""
+
+    # QRunnable can't inherit QObject, so signals live on a nested helper.
+    class _Signals(QtCore.QObject):
+        result = QtCore.Signal(object)
+        error = QtCore.Signal(str)
 
     def __init__(self, fn: Callable, *args, **kwargs):
         super().__init__()
         self._fn = fn
         self._args = args
         self._kwargs = kwargs
-        self.signals = WorkerSignals()
+        self.signals = self._Signals()
 
     @QtCore.Slot()
     def run(self) -> None:
