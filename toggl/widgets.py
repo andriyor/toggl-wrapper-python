@@ -69,8 +69,8 @@ class IdlePage(QtWidgets.QWidget):
         self.list.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
         self.list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.list.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.list.setTextElideMode(QtCore.Qt.ElideNone)
         self.list.setFrameShape(QtWidgets.QFrame.NoFrame)
-        self.list.setMaximumWidth(720)
         self.list.setMaximumHeight(420)
 
         self.hint = _centered_label(self._HINT)
@@ -80,7 +80,6 @@ class IdlePage(QtWidgets.QWidget):
         layout.setSpacing(24)
         layout.addStretch(1)
         layout.addWidget(self.title)
-        layout.addWidget(self.list, alignment=QtCore.Qt.AlignHCenter)
         layout.addWidget(self.hint)
         layout.addStretch(1)
 
