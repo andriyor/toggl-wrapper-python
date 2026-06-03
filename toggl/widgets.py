@@ -157,7 +157,7 @@ class RunningPage(QtWidgets.QWidget):
     #: Emitted when the user asks to stop the running timer.
     stop_requested = QtCore.Signal()
 
-    _STOP_TEXT = "⏸  Stop"
+    _STOP_TEXT = "||  Stop"
     _HINT = "Enter to stop · Esc to exit"
 
     def __init__(self, parent: QtWidgets.QWidget | None = None):
