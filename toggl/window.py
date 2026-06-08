@@ -23,10 +23,11 @@ TICK_INTERVAL_MS = 1_000
 
 
 class FullscreenTimer(QtWidgets.QWidget):
-    def __init__(self, client: TogglClient):
+    def __init__(self, client: TogglClient, *, fullscreen: bool = True):
         super().__init__()
         self.client = client
         self.pool = QtCore.QThreadPool.globalInstance()
+        self._fullscreen = fullscreen
 
         # -- State --------------------------------------------------------- #
         self.workspace_id: int | None = None
@@ -45,8 +46,21 @@ class FullscreenTimer(QtWidgets.QWidget):
         for page in (self.status_page, self.idle_page, self.running_page):
             self.stack.addWidget(page)
 
+        self.exit_fs_button = QtWidgets.QPushButton("Exit Full Screen")
+        self.exit_fs_button.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.exit_fs_button.setCursor(QtCore.Qt.PointingHandCursor)
+        self.exit_fs_button.clicked.connect(self._exit_fullscreen)
+        self.exit_fs_button.setVisible(fullscreen)
+
+        top_bar = QtWidgets.QHBoxLayout()
+        top_bar.setContentsMargins(12, 8, 12, 0)
+        top_bar.addStretch(1)
+        top_bar.addWidget(self.exit_fs_button)
+
         layout = QtWidgets.QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        layout.addLayout(top_bar)
         layout.addWidget(self.stack)
 
         self.idle_page.selection_changed.connect(self._on_selection_changed)
@@ -71,6 +85,7 @@ class FullscreenTimer(QtWidgets.QWidget):
     def _apply_theme(self, color: str | None) -> None:
         theme = Theme.for_color(color)
         theme.apply_window_background(self)
+        self.exit_fs_button.setStyleSheet(theme.exit_fs_button_qss())
         for page in (self.status_page, self.idle_page, self.running_page):
             page.apply_theme(theme)
 
@@ -198,9 +213,23 @@ class FullscreenTimer(QtWidgets.QWidget):
         elapsed = (datetime.now(timezone.utc) - self.start_dt).total_seconds()
         self.running_page.set_elapsed(format_seconds(elapsed))
 
+    # -- Full screen toggle ------------------------------------------------- #
+    def _exit_fullscreen(self) -> None:
+        self._fullscreen = False
+        self.exit_fs_button.setVisible(False)
+        self.showNormal()
+
     # -- Keyboard ----------------------------------------------------------- #
     def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
         key = event.key()
+        if key == QtCore.Qt.Key_F11:
+            if self._fullscreen:
+                self._exit_fullscreen()
+            else:
+                self._fullscreen = True
+                self.exit_fs_button.setVisible(True)
+                self.showFullScreen()
+            return
         if key in (QtCore.Qt.Key_Escape, QtCore.Qt.Key_Q):
             self.close()
             return

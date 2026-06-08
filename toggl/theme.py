@@ -70,6 +70,19 @@ class Theme:
             QPushButton:hover {{ background: rgba(127,127,127,0.2); }}
         """
 
+    def exit_fs_button_qss(self) -> str:
+        return f"""
+            QPushButton {{
+                color: {self.subtext};
+                background: transparent;
+                border: 1px solid {self.subtext};
+                border-radius: 6px;
+                padding: 4px 12px;
+                font-size: 13px;
+            }}
+            QPushButton:hover {{ background: rgba(127,127,127,0.2); }}
+        """
+
     def list_qss(self) -> str:
         return """
             QListWidget { background: transparent; border: none; outline: none; }
