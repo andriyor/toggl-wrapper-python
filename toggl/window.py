@@ -8,9 +8,12 @@ small methods the pages expose.
 
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timezone
 
 from PySide6 import QtCore, QtGui, QtWidgets
+
+logger = logging.getLogger(__name__)
 
 from .api import TogglClient
 from .theme import Theme
@@ -201,6 +204,7 @@ class FullscreenTimer(QtWidgets.QWidget):
         self._on_error(message)
 
     def _on_error(self, message: str) -> None:
+        logger.error(message)
         self.clock.stop()
         self.status_page.set_message(f"Error: {message}", "Esc to exit")
         self.stack.setCurrentWidget(self.status_page)
