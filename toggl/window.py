@@ -125,7 +125,8 @@ class FullscreenTimer(QtWidgets.QWidget):
     def refresh_current(self) -> None:
         if self.busy:
             return
-        self._run(self.client.current_entry, on_result=self._on_current)
+        self._run(self.client.current_entry, on_result=self._on_current,
+                  on_error=self._on_poll_error)
 
     def _on_current(self, entry: dict | None) -> None:
         self.current = entry or None
@@ -202,6 +203,9 @@ class FullscreenTimer(QtWidgets.QWidget):
         self.busy = False
         self.running_page.set_stopping(False)
         self._on_error(message)
+
+    def _on_poll_error(self, message: str) -> None:
+        logger.warning("poll failed (will retry): %s", message)
 
     def _on_error(self, message: str) -> None:
         logger.error(message)
